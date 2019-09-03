@@ -1,14 +1,14 @@
-#include<iostream>
-using namespace std;
+#include <emscripten/bind.h>
+using namespace emscripten;
 
-struct node {
+struct link {
     int data;
-    node *next;
+    link *next;
 };
 
 class LinkedList {
     private:
-        node *head, *tail;
+        link *head, *tail;
         int nItems;
         
     public:
@@ -21,6 +21,8 @@ class LinkedList {
         int removeLast();
         int removeAt(int);
         int size();
+        int top();
+        bool isEmpty();
 };
 
 LinkedList::LinkedList() {
@@ -30,25 +32,32 @@ LinkedList::LinkedList() {
 }
 
 void LinkedList::insertFirst(int item) {
-    node *newLink = new node;
+    link *newLink = new link;
     newLink -> data = item;
+    newLink -> next = NULL;
+    if(isEmpty()) 
+        tail = newLink;
     newLink -> next = head;
     head = newLink;
     nItems++;
 }
 
 void LinkedList::insertLast(int item) {
-    node *newLink = new node;
+    link *newLink = new link;
     newLink -> data = item;
-    tail -> next = newLink;
+    newLink -> next = NULL;
+    if(isEmpty())
+        head = newLink;
+    else
+        tail -> next = newLink;
     tail = newLink;
     nItems++;
 }
 
 void LinkedList::insertAt(int index, int item) {
-    node *newLink = new node;
-    node *current = new node;
-    node *prev = new node;
+    link *newLink = new link;
+    link *current = new link;
+    link *prev = new link;
     
     current = head;
     for(int i = 0; i <= index; i++) {
@@ -61,29 +70,19 @@ void LinkedList::insertAt(int index, int item) {
     nItems++;
 }
 
-void LinkedList::displayList() {
-    node *current = new node;
-    current = head;
-
-    while(current != NULL) {
-        cout<<current -> data<<" ";
-        current = current -> next;
-    }
-}
-
 int LinkedList::removeFirst() {
-    node *deleteNode = new node;
-    deleteNode = head;
+    link *deletelink = new link;
+    deletelink = head;
     head = head -> next;
-    int value = deleteNode -> data;
-    delete deleteNode;
+    int value = deletelink -> data;
+    delete deletelink;
     nItems--;
     return value;
 }
 
 int LinkedList::removeLast() {
-    node *current = new node;
-    node *prev = new node;
+    link *current = new link;
+    link *prev = new link;
     current = head;
 
     while(current -> next != NULL) {
@@ -99,8 +98,8 @@ int LinkedList::removeLast() {
 }
 
 int LinkedList::removeAt(int index) {
-    node *current = new node;
-    node *prev = new node;
+    link *current = new link;
+    link *prev = new link;
     current = head;
 
     for(int i = 0; i < index; i++) {
@@ -115,4 +114,27 @@ int LinkedList::removeAt(int index) {
 
 int LinkedList::size() {
     return nItems;
+}
+
+int LinkedList::top() {
+    return head -> data;
+}
+
+bool LinkedList::isEmpty() {
+    return head == NULL;
+}
+
+EMSCRIPTEN_BINDINGS(LinkedList) {
+  class_<LinkedList>("LinkedList")
+    .constructor<>()
+    .function("insertFirst", &LinkedList::insertFirst)
+    .function("insertLast", &LinkedList::insertLast)
+    .function("insertAt", &LinkedList::insertAt)
+    .function("removeFirst", &LinkedList::removeFirst)
+    .function("removeLast", &LinkedList::removeLast)
+    .function("removeAt", &LinkedList::removeAt)
+    .function("size", &LinkedList::size)
+    .function("top", &LinkedList::top)
+    .function("isEmpty", &LinkedList::isEmpty)
+    ;
 }
