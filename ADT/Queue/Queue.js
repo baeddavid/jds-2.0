@@ -4287,4 +4287,3 @@ Module.onRuntimeInitialized = _ => {
       q.enque(i);
   };
   console.timeEnd('Function C++')
-}
